@@ -1,16 +1,7 @@
-path_to_local_libs = 'C:\\Users\\valen\\Documents\\GitHub\\Lib\\'
 import networkx as nx
-try:
-    import ndlib_local.ndlib.models.ModelConfig as mc
-    import ndlib_local.ndlib.models.opinions as op
-except ModuleNotFoundError:
-    import sys
-    sys.path.insert(0,path_to_local_libs)
-    import ndlib_local.ndlib.models.ModelConfig as mc
-    import ndlib_local.ndlib.models.opinions as op
+import ndlib_local.ndlib.models.ModelConfig as mc
+import ndlib_local.ndlib.models.opinions as op
 import warnings
-import json
-import os.path
 warnings.filterwarnings("ignore")
 
 graph = nx.barabasi_albert_graph(250, 5)
