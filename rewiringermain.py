@@ -29,6 +29,7 @@ for pr in [0.1, 0.2, 0.3, 0.4, 0.5]:
                 max_key = int(max(dict_keys)) + 1
             else:
                 final_opinions = dict()
+                
                 final_iterations = dict()
                 max_key = 0
 
