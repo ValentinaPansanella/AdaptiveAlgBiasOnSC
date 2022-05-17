@@ -1,15 +1,7 @@
 import json
-import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
-
-path = "finals/"
-
-graph = "er"
-n = 250
-p = 0.1
-nruns = 10
-max_it = 100000
+import os
 
 def nclusters(data, threshold):
     data = [float(el) for el in data]
@@ -41,23 +33,26 @@ def finaldistribution(name):
     jsonfile = open(f'finals/final_opinions {name}.json')
     data = json.load(jsonfile)
     for nr in data.keys():
-        finalops = list(data[str(nr)])
-        x = [i for i in range(250)]
-        y = sorted(finalops)    
-        node2col = {}
-        for node in x:
-            if y[node] < 0.33:
-                node2col[node] = '#3776ab'
-            elif 0.33 <= y[node] <= 0.66:
-                node2col[node] = '#FFA500'
-            else:
-                node2col[node] = '#FF0000'
-        for node in x:
-            plt.scatter(x[node], y[node], s = 0.2, c = node2col[node])
-        plt.ylim(-0.01, 1.01)
-        plt.savefig(f"plots/final_opinions {name} nr{nr}.png")
-        plt.tight_layout()
-        plt.close()
+        if not os.path.exists(f"plots/final_opinions {name} nr{nr}.png"):
+            finalops = list(data[str(nr)])
+            x = [i for i in range(250)]
+            y = sorted(finalops)    
+            node2col = {}
+            for node in x:
+                if y[node] < 0.33:
+                    node2col[node] = '#3776ab'
+                elif 0.33 <= y[node] <= 0.66:
+                    node2col[node] = '#FFA500'
+                else:
+                    node2col[node] = '#FF0000'
+            for node in x:
+                plt.scatter(x[node], y[node], s = 0.2, c = node2col[node])
+            plt.ylim(-0.01, 1.01)
+            plt.savefig(f"plots/final_opinions {name} nr{nr}.png")
+            plt.tight_layout()
+            plt.close()
+        else:
+            continue
 
 # with open(f"finals/aggregate rewiring {graph}{p}.csv", "w") as ofile:
 #     for pr in [0.0, 0.1, 0.2, 0.3, 0.4, 0.5]:
@@ -86,10 +81,21 @@ def finaldistribution(name):
 #                 except FileNotFoundError:
 #                     continue
 
-for pr in [0.0, 0.1, 0.2, 0.3, 0.4, 0.5]:
-    for e in [0.2, 0.3, 0.4]:
-        for g in [0.0, 0.4, 0.8, 1.2, 1.6]:
-            name = f"rewiring {graph}{p} pr{pr} e{e} g{g} mi{max_it}"
-            print(f"plotting {name}")
-            finaldistribution(name)
+max_it = 100000
+
+for graph in ['er', 'ba']:
+    if graph == "er":
+        p = 0.1
+    else:
+        p = 5
+    for pr in [0.0, 0.1, 0.2, 0.3, 0.4, 0.5]:
+        for e in [0.2, 0.3, 0.4]:
+            for g in [0.0, 0.4, 0.8, 1.2, 1.6]:
+                name = f"rewiring {graph}{p} pr{pr} e{e} g{g} mi{max_it}"
+                print(f"plotting {name}")
+                finaldistribution(name)
+                name = f"triangles rewiring {graph}{p} pr{pr} e{e} g{g} mi{max_it}"
+                print(f"plotting {name}")
+                finaldistribution(name)
+ 
  
