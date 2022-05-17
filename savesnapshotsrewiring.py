@@ -2,7 +2,6 @@ import sys
 sys.path.append("/home/pansanella/mydata/GitHub/local_packages/")
 sys.path.append("/data1/users/pansanella/mydata/GitHub/local_packages/")
 sys.path.append("/data1/users/pansanella/mydata/GitHub/local_packages/netdspatch_local/")
-
 import networkx as nx
 import ndlib_local.ndlib.models.ModelConfig as mc
 import ndlib_local.ndlib.models.opinions as op
@@ -10,25 +9,26 @@ import warnings
 import tqdm
 import os
 import numpy as np
+
 warnings.filterwarnings("ignore")
 
+
 def steady_state_coevolving(model, name, max_iterations=100000, nsteady=1000, sensibility=0.00001, node_status=True, progress_bar=False):
-    if not os.path.exists(f"snapshotGraphs/edgelist {name} 0.csv"):
-        print(type(model.graph.graph))
+    if not os.path.exists(f"snapshotGraphs/rewiring/{name}/"):
+        os.mkdir(f"snapshotGraphs/rewiring/{name}/")
         system_status = []
         steady_it = 0
         for it in tqdm.tqdm(range(0, max_iterations), disable=not progress_bar):            
             its = model.iteration(node_status)
-            
-            if it == 0:
+
+            if it % 500 == 0:
                 G = model.graph.graph
-                nx.write_edgelist(G, f"snapshotGraphs/edgelist {name} {it}.csv", delimiter=",")
-                with open(f"snapshotGraphs/opinions {name} {it}.txt", "w") as opfile:
-                    first_values = list(its['status'].values())
-                    for op in first_values:
+                nx.write_edgelist(G, f"snapshotGraphs/rewiring/{name}/edgelist {it}.csv", delimiter=",")
+                with open(f"snapshotGraphs/rewiring/{name}/opinions {it}.txt", "w") as opfile:
+                    for op in list(np.array(list(its['status'].values()))):
                         opfile.write(str(op)+"\n")
 
-            elif it > 0:
+            if it > 0:
                 old = np.array(list(system_status[-1]['status'].values()))
                 actual = np.array(list(its['status'].values()))
                 # res = np.abs(old - actual)
@@ -37,22 +37,14 @@ def steady_state_coevolving(model, name, max_iterations=100000, nsteady=1000, se
                 else:
                     steady_it = 0
 
-                if it % 500 == 0:
-                    G = model.graph.graph
-                    nx.write_edgelist(G, f"snapshotGraphs/edgelist {name} {it}.csv", delimiter=",")
-                    with open(f"snapshotGraphs/opinions {name} {it}.txt", "w") as opfile:
-                        for op in list(actual):
-                            opfile.write(str(op)+"\n")
-
             system_status.append(its)
             
             if steady_it == nsteady:
                 G = model.graph.graph
-                nx.write_edgelist(G, f"snapshotGraphs/edgelist {name} {it}.csv", delimiter=",")
-                with open(f"snapshotGraphs/opinions {name} {it}.txt", "w") as opfile:
+                nx.write_edgelist(G, f"snapshotGraphs/rewiring/{name}/edgelist {it}.csv", delimiter=",")
+                with open(f"snapshotGraphs/rewiring/{name}/opinions {it}.txt", "w") as opfile:   
                     for op in list(actual):
-                        opfile.write(str(op)+"\n")
-                        
+                        opfile.write(str(op)+"\n")  
                 return system_status[:-nsteady]
 
         return system_status

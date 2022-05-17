@@ -43,7 +43,7 @@ def multiple_exec():
                 for nr in (range(max_key, nruns)):
                     print(f"doing {name} run {nr}")
                     # Model selection
-                    model = op.AdaptiveAlgorithmicBiasModel(graph)
+                    model = op.AdaptivePeerPressureAlgorithmicBiasModel(graph)
                     # Model configuration
                     config = mc.Configuration()
                     config.add_model_parameter("epsilon", e)
