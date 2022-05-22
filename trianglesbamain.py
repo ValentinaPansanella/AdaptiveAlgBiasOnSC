@@ -11,14 +11,12 @@ import ndlib_local.ndlib.models.opinions as op
 import warnings
 warnings.filterwarnings("ignore")
 
-
-
 def multiple_exec():
     graphname = "ba"
     p = 5
     n = 250
     graph = nx.barabasi_albert_graph(n, p)
-    nruns = 30
+    nruns = 10
     max_it = 100000
     for pr in [0.0, 0.1, 0.2, 0.3, 0.4, 0.5]:
         for e in [0.2, 0.3, 0.4]:
@@ -33,8 +31,9 @@ def multiple_exec():
                         final_opinions = json.load(fo)
                     with open(f"aggregate/final_iterations {name}.json") as fi:
                         final_iterations = json.load(fi)
-                    dict_keys = list(final_opinions.keys())
-                    max_key = int(max(dict_keys)) + 1
+                    dict_keys = [int(el) for el in final_opinions.keys()]
+                    max_key = max(dict_keys)+1
+                    print(max_key)
                 else:
                     final_opinions = dict()
                     final_iterations = dict()
@@ -68,9 +67,11 @@ def multiple_exec():
                         final_opinions = json.load(fo)
                 with open(f"aggregate/final_iterations {name}.json") as fi:
                     final_iterations = json.load(fi)
+                    
                 dict_keys_fo = list(final_opinions.keys())
                 dict_keys_fi = list(final_iterations.keys())
-                if len(dict_keys_fo) == len(dict_keys_fi) == 30:
+
+                if len(dict_keys_fo) == len(dict_keys_fi) >= nruns-1:
                     print("ok")
                     continue
                 else:
