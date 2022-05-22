@@ -1,7 +1,7 @@
 import sys
-sys.path.append("/home/pansanella/mydata/GitHub/local_packages/")
-sys.path.append("/data1/users/pansanella/mydata/GitHub/local_packages/")
-sys.path.append("/data1/users/pansanella/mydata/GitHub/local_packages/netdspatch_local/")
+sys.path.append("/../../GitHub/local_packages/")
+sys.path.append("/../../GitHub/local_packages/")
+sys.path.append("/../../GitHub/local_packages/netdspatch_local/")
 
 import json
 import os

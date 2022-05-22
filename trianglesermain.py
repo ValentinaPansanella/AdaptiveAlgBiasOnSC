@@ -1,7 +1,7 @@
 import sys
-sys.path.append("/home/pansanella/mydata/GitHub/local_packages/")
-sys.path.append("/data1/users/pansanella/mydata/GitHub/local_packages/")
-sys.path.append("/data1/users/pansanella/mydata/GitHub/local_packages/netdspatch_local/")
+sys.path.append("/../../GitHub/local_packages/")
+sys.path.append("/../../GitHub/local_packages/")
+sys.path.append("/../../GitHub/local_packages/netdspatch_local/")
 
 import json
 import os
@@ -18,7 +18,7 @@ def multiple_exec():
     graph = nx.erdos_renyi_graph(n, p)
     nruns = 10
     max_it = 100000
-    for pr in [0.0, 0.1, 0.2, 0.3, 0.4, 0.5]:
+    for pr in [0.5, 0.4, 0.3, 0.2, 0.1, 0.0]:
         for e in [0.2, 0.3, 0.4]:
             for g in [0.0, 0.4, 0.8, 1.2, 1.6]:
                 final_opinions = dict()
