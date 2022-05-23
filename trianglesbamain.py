@@ -1,8 +1,8 @@
 import sys
-sys.path.append("/../../GitHub/local_packages/")
-sys.path.append("/../../GitHub/local_packages/")
-sys.path.append("/../../GitHub/local_packages/netdspatch_local/")
-
+# sys.path.append("/../../GitHub/local_packages/")
+# sys.path.append("/../../GitHub/local_packages/")
+# sys.path.append("/../../GitHub/local_packages/netdspatch_local/")
+sys.path.append("/../local_packages/")
 import json
 import os
 import networkx as nx
