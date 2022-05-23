@@ -1,8 +1,8 @@
 import sys
-sys.path.append("/../../GitHub/local_packages/")
-sys.path.append("/../../GitHub/local_packages/")
-sys.path.append("/../../GitHub/local_packages/netdspatch_local/")
-
+# sys.path.append("/../../GitHub/local_packages/")
+# sys.path.append("/../../GitHub/local_packages/")
+# sys.path.append("/../../GitHub/local_packages/netdspatch_local/")
+sys.path.append("/../local_packages/")
 import json
 import os
 import networkx as nx
@@ -19,7 +19,7 @@ def multiple_exec():
     nruns = 10
     max_it = 100000
     for pr in [0.0, 0.1, 0.2, 0.3, 0.4, 0.5]:
-        for e in [0.3]:
+        for e in [0.4]:
             for g in [0.0, 0.4, 0.8, 1.2, 1.6]:
                 final_opinions = dict()
                 final_iterations = dict()
