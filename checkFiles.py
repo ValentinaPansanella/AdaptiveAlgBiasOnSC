@@ -45,5 +45,5 @@ def checkfiles(modelname, graphname):
                     print('for ', name)
                     continue
 
-checkfiles("rewiring", "ba")
+checkfiles("triangles rewiring", "ba")
                 

@@ -18,9 +18,9 @@ def multiple_exec():
     graph = nx.barabasi_albert_graph(n, p)
     nruns = 10
     max_it = 100000
-    for pr in [0.5, 0.4, 0.3]:
-        for e in [0.4]:
-            for g in [0.0, 0.4, 0.8, 1.2, 1.6]:
+    for pr in [0.4]:
+        for e in [0.4, 0.3]:
+            for g in [1.6]:
                 final_opinions = dict()
                 final_iterations = dict()
                 name = f"triangles rewiring {graphname}{p} pr{pr} e{e} g{g} mi{max_it}"
