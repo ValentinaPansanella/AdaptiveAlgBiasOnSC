@@ -16,7 +16,7 @@ def multiple_exec():
     p = 0.1
     n = 250
     graph = nx.erdos_renyi_graph(n, p)
-    nruns = 15
+    nruns = 30
     max_it = 100000
     for pr in [0.5, 0.4, 0.3, 0.2, 0.1, 0.0]:
         for e in [0.2, 0.3, 0.4]:
