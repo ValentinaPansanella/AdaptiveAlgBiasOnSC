@@ -53,7 +53,8 @@ def steady_state_coevolving(model, name, max_iterations=100000, nsteady=1000, se
 n = 250
 max_it = 100000
 
-for graphname in ['er', 'ba']:
+for graphname in ['er']:
+    print("weeeeee")
     if graphname == 'er':
         p = 0.1
         graph = nx.erdos_renyi_graph(n, p)
@@ -61,9 +62,10 @@ for graphname in ['er', 'ba']:
         p = 5
         graph = nx.barabasi_albert_graph(n, p)
     for pr in [0.5]:
-        for e in [0.2, 0.3, 0.4]:
-            for g in [0.0, 0.5, 1.0, 1.5]:
+        for e in [0.2]:
+            for g in [0.0]:
                 name = f"rewiring {graphname}{p} pr{pr} e{e} g{g} mi{max_it}"
+                print(name)
                 model = op.AdaptiveAlgorithmicBiasModel(graph)
                 config = mc.Configuration()
                 config.add_model_parameter("epsilon", e)
@@ -71,3 +73,4 @@ for graphname in ['er', 'ba']:
                 config.add_model_parameter("p", pr)
                 model.set_initial_status(config)
                 steady_status = steady_state_coevolving(model=model, name=name, max_iterations=max_it, nsteady=1000, sensibility=0.00001, node_status=True, progress_bar=True)                                
+                
