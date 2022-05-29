@@ -13,7 +13,7 @@ def checkfiles(modelname, graphname):
     if modelname == "triangles rewiring":
         nruns = 10
     else:
-        nruns = 15
+        nruns = 30
     max_it = 100000
     for pr in [0.5, 0.4, 0.3, 0.2, 0.1, 0.0]:
         for e in [0.4, 0.3, 0.2]:
