@@ -4,6 +4,15 @@ import os
 import networkx as nx
 import csv
 from tqdm import tqdm
+import ndlib_local.ndlib.models.ModelConfig as mc
+import ndlib_local.ndlib.models.opinions as op
+import warnings
+import tqdm
+import numpy as np
+from matplotlib.offsetbox import AnchoredText
+
+
+
 def nclusters(data, threshold):
     data = [float(el) for el in data]
     data = sorted(data)
@@ -62,21 +71,6 @@ def add_opinions(graph, opinions):
 
 def compute_ncc(graph):
     return nx.number_connected_components(graph)
-
-import sys
-sys.path.append("/home/pansanella/mydata/GitHub/local_packages/")
-sys.path.append("/data1/users/pansanella/mydata/GitHub/local_packages/")
-sys.path.append("/data1/users/pansanella/mydata/GitHub/local_packages/netdspatch_local/")
-import networkx as nx
-import ndlib_local.ndlib.models.ModelConfig as mc
-import ndlib_local.ndlib.models.opinions as op
-import warnings
-import tqdm
-import os
-import numpy as np
-from matplotlib.offsetbox import AnchoredText
-
-warnings.filterwarnings("ignore")
 
 def iteration_bunch(model, name, niterations=10, node_status=True, progress_bar=True):
     if not os.path.exists(f"snapshotGraphs nuovi nuovi/{modelname}/{name}/"):
