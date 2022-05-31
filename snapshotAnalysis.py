@@ -28,6 +28,7 @@ def nclusters(data, threshold):
         C_den += cluster[k]*cluster[k]
     C = C_num / C_den
     return C
+
 def read_snapshot(filename):
     G = nx.Graph()
     with open(filename, 'r') as edgelistfile:
@@ -136,7 +137,7 @@ if not os.path.exists(f"snapshotGraphs nuovi nuovi/{modelname}/"):
 n = 250
 max_it = 1000000
 
-for graphname in ['er']:
+for graphname in ['er', 'ba']:
     if graphname == 'er':
         p = 0.1
         graph = nx.erdos_renyi_graph(n, p, seed=0)
@@ -148,13 +149,36 @@ for graphname in ['er']:
             for g in [0.0,0.5,1.0,1.5]:
                 name = f"{modelname} {graphname}{p} pr{pr} e{e} g{g} mi{max_it}"
                 print(name)
-                if modelname == "rewiring":
-                    model = op.AdaptiveAlgorithmicBiasModel(graph)
+                if not os.path.exists(f"snapshotGraphs nuovi nuovi/{modelname}/{name}/"):
+                    if modelname == "rewiring":
+                        model = op.AdaptiveAlgorithmicBiasModel(graph)
+                    else:
+                        model = op.AdaptivePeerPressureAlgorithmicBiasModel(graph)
+                    config = mc.Configuration()
+                    config.add_model_parameter("epsilon", e)
+                    config.add_model_parameter("gamma", g)
+                    config.add_model_parameter("p", pr)
+                    model.set_initial_status(config)
+                    status = iteration_bunch(model, name, niterations=max_it+1, node_status=True, progress_bar=True) 
                 else:
-                    model = op.AdaptivePeerPressureAlgorithmicBiasModel(graph)
-                config = mc.Configuration()
-                config.add_model_parameter("epsilon", e)
-                config.add_model_parameter("gamma", g)
-                config.add_model_parameter("p", pr)
-                model.set_initial_status(config)
-                status = iteration_bunch(model, name, niterations=max_it+1, node_status=True, progress_bar=True)                
+                    start = 0
+                    for filename in os.listdir(f"snapshotGraphs nuovi nuovi/{modelname}/{name}/"):
+                        if filename.startswith("edgelist"):
+                            tmp = int(filename.split(' ')[1].split('.')[0])
+                            if tmp > start:
+                                start = tmp
+                    if start < max_it:
+                        gr = read_snapshot(f"snapshotGraphs nuovi nuovi/{modelname}/{name}/edgelist {start}.csv")
+                        opinions, colors = read_opinions(f"snapshotGraphs nuovi nuovi/{modelname}/{name}/opinions {start}.txt")
+                        if modelname == "rewiring":
+                            model = op.AdaptiveAlgorithmicBiasModel(gr)
+                        else:
+                            model = op.AdaptivePeerPressureAlgorithmicBiasModel(gr)
+                        config = mc.Configuration()
+                        config.add_model_parameter("epsilon", e)
+                        config.add_model_parameter("gamma", g)
+                        config.add_model_parameter("p", pr)
+                        model.set_initial_status(config, initial_status=opinions)
+                        status = iteration_bunch(model, name, niterations=max_it+1, node_status=True, progress_bar=True) 
+                    else:
+                        print("everything's already there!!")
