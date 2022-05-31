@@ -72,14 +72,12 @@ def add_opinions(graph, opinions):
 def compute_ncc(graph):
     return nx.number_connected_components(graph)
 
-def iteration_bunch(model, name, niterations=10, node_status=True, progress_bar=True):
+def iteration_bunch(model, name, start, niterations=10, node_status=True, progress_bar=True):
     if not os.path.exists(f"snapshotGraphs nuovi nuovi/{modelname}/{name}/"):
         os.mkdir(f"snapshotGraphs nuovi nuovi/{modelname}/{name}/")
-    system_status = []
     params = name.split(' ')
-    for it in tqdm.tqdm(range(0, niterations), disable=not progress_bar):    
+    for it in tqdm.tqdm(range(start+1, niterations), disable=not progress_bar):    
         its = model.iteration(node_status)
-        system_status.append(its)
         save_snapshots_for = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 20, 50, 100, 500, 1000, 2000, 5000, 10000, 100000, 500000, max_it]
         if it in save_snapshots_for:
             fig, ax = plt.subplots(1, 1, num=1, figsize=(10, 8), dpi=600)
@@ -120,10 +118,8 @@ def iteration_bunch(model, name, niterations=10, node_status=True, progress_bar=
             
             if C <= 1.0:
                 break
-        
-        # return system_status
 
-modelname = "triangles rewiring"
+modelname = "rewiring"
 
 if not os.path.exists(f"snapshotGraphs nuovi nuovi/{modelname}/"):
     os.mkdir(f"snapshotGraphs nuovi nuovi/{modelname}/")
@@ -131,7 +127,7 @@ if not os.path.exists(f"snapshotGraphs nuovi nuovi/{modelname}/"):
 n = 250
 max_it = 1000000
 
-for graphname in ['er', 'ba']:
+for graphname in ['ba']:
     if graphname == 'er':
         p = 0.1
         graph = nx.erdos_renyi_graph(n, p, seed=0)
@@ -153,15 +149,18 @@ for graphname in ['er', 'ba']:
                     config.add_model_parameter("gamma", g)
                     config.add_model_parameter("p", pr)
                     model.set_initial_status(config)
-                    status = iteration_bunch(model, name, niterations=max_it+1, node_status=True, progress_bar=True) 
+                    status = iteration_bunch(model, name, start=0, niterations=max_it+1, node_status=True, progress_bar=True) 
                 else:
                     start = 0
                     for filename in os.listdir(f"snapshotGraphs nuovi nuovi/{modelname}/{name}/"):
                         if filename.startswith("edgelist"):
+                            print("yay")
                             tmp = int(filename.split(' ')[1].split('.')[0])
                             if tmp > start:
                                 start = tmp
+                                print(start)
                     if start < max_it:
+                        print("starting from it ", start)
                         gr = read_snapshot(f"snapshotGraphs nuovi nuovi/{modelname}/{name}/edgelist {start}.csv")
                         opinions, colors = read_opinions(f"snapshotGraphs nuovi nuovi/{modelname}/{name}/opinions {start}.txt")
                         if modelname == "rewiring":
@@ -173,6 +172,6 @@ for graphname in ['er', 'ba']:
                         config.add_model_parameter("gamma", g)
                         config.add_model_parameter("p", pr)
                         model.set_initial_status(config, initial_status=opinions)
-                        status = iteration_bunch(model, name, niterations=max_it+1, node_status=True, progress_bar=True) 
+                        status = iteration_bunch(model, name, start=start, niterations=max_it+1, node_status=True, progress_bar=True) 
                     else:
                         print("everything's already there!!")
