@@ -4,14 +4,19 @@ import os
 import networkx as nx
 import csv
 from tqdm import tqdm
+import sys
+sys.path.append("/home/pansanella/mydata/GitHub/local_packages/")
+sys.path.append("/data1/users/pansanella/mydata/GitHub/local_packages/")
+sys.path.append("/data1/users/pansanella/mydata/GitHub/local_packages/netdspatch_local/")
+
+import networkx as nx
 import ndlib_local.ndlib.models.ModelConfig as mc
 import ndlib_local.ndlib.models.opinions as op
 import warnings
 import tqdm
+import os
 import numpy as np
 from matplotlib.offsetbox import AnchoredText
-
-
 
 def nclusters(data, threshold):
     data = [float(el) for el in data]
@@ -37,7 +42,6 @@ def nclusters(data, threshold):
         C_den += cluster[k]*cluster[k]
     C = C_num / C_den
     return C
-
 def read_snapshot(filename):
     G = nx.Graph()
     with open(filename, 'r') as edgelistfile:
@@ -53,14 +57,7 @@ def read_opinions(filename):
     with open(filename) as infile:
         opinions = infile.readlines()
     opinions = [float(op.strip()) for op in opinions]
-    for op in opinions:
-        if op < 0.4:
-            colors.append("red")
-        elif op >= 0.4 and op <= 0.6:
-            colors.append("green")
-        else:
-            colors.append("blue")
-    return opinions, colors
+    return opinions
     
 
 def add_opinions(graph, opinions):
@@ -72,106 +69,102 @@ def add_opinions(graph, opinions):
 def compute_ncc(graph):
     return nx.number_connected_components(graph)
 
-def iteration_bunch(model, name, start, niterations=10, node_status=True, progress_bar=True):
-    if not os.path.exists(f"snapshotGraphs nuovi nuovi/{modelname}/{name}/"):
-        os.mkdir(f"snapshotGraphs nuovi nuovi/{modelname}/{name}/")
-    params = name.split(' ')
-    for it in tqdm.tqdm(range(start+1, niterations), disable=not progress_bar):    
+
+warnings.filterwarnings("ignore")
+
+
+def save_snapshot(model, its, modelname, name, nit):
+    if not os.path.exists(f'snapshotGraphs/{modelname}/{name}/'):
+        os.mkdir(f'snapshotGraphs/{modelname}/{name}/')
+    fig, ax = plt.subplots(1, 1, num=1, figsize=(10, 8))
+    G = model.graph.graph                    
+    opinions = list(its['status'].values()) 
+    pos = nx.spring_layout(G, seed=1)  # positions for all nodes
+    nx.draw(G, pos, node_color=opinions, cmap=plt.cm.RdBu_r, node_size=300.0, vmin=0.0, vmax=1.0, width=0.1, alpha=1.0, ax = ax)
+    plt.tight_layout()
+    plt.savefig(f"snapshotGraphs/{modelname}/{name}/{name}_network {nit}.png")
+    plt.close()
+    sns.set_style("ticks")
+    fig, ax = plt.subplots(1, 1, num=1, figsize=(10, 6))
+    sns.despine()
+    degrees = [G.degree(n) for n in G.nodes()]
+    sns.histplot(x=degrees, kde=True)
+    ax.grid(True)
+    ax.tick_params(direction='out', length=10, width=3, colors = "black", labelsize=30, grid_color = "black", grid_alpha = 0.1)
+    ax.set_ylabel("# Nodes", size=20)
+    ax.set_xlabel("Degree", size=20)
+    plt.savefig(f"snapshotGraphs/{modelname}/{name}/{name}_degreedist {nit}.png")
+    plt.close()
+    nx.write_edgelist(G, f"snapshotGraphs/{modelname}/{name}/{name}_edgelist {nit}.csv", delimiter=",")
+    with open(f"snapshotGraphs/{modelname}/{name}/{name}_opinions {nit}.txt", "w") as opfile:
+        for op in list(its['status'].values()):
+            opfile.write(str(op)+"\n")
+    C = nclusters(opinions, 0.001)
+    if C == 1.0:
+        return 1
+
+
+def steady_state_coevolving(model, name, nsteady=1000, max_iterations=10, sensibility = 0.00001, node_status=True, progress_bar=True):
+    system_status = []
+    steady_it = 0
+    for it in tqdm.tqdm(range(0, max_iterations), disable=not progress_bar):
+        oldgraph = model.graph.graph.copy()
         its = model.iteration(node_status)
         save_snapshots_for = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 20, 50, 100, 500, 1000, 2000, 5000, 10000, 100000, 500000, max_it]
+        if it > 0:
+            if np.all((its['max_diff'] < sensibility)):
+                steady_it += 1
+            else:
+                steady_it = 0
+        system_status.append(its)
+        if oldgraph.edges() != model.graph.graph.edges() : steady_it = 0 
+        if steady_it == nsteady:
+            return system_status[:-nsteady]
         if it in save_snapshots_for:
-            fig, ax = plt.subplots(1, 1, num=1, figsize=(10, 8), dpi=600)
-            G = model.graph.graph
-            pos = nx.spring_layout(G, seed=1)  # positions for all nodes
-            nx.draw(G, pos, node_color=list(its['status'].values()), cmap=plt.cm.RdBu, node_size=80.0, vmin=0.0, vmax=1.0, width=0.1, alpha=1.0, ax = ax)
-            plt.title(f"Network at time {it}")
-            plt.tight_layout()
-            sm = plt.cm.ScalarMappable(cmap=plt.cm.RdBu, norm=plt.Normalize(vmin = 0, vmax=1))
-            sm._A = []
-            cbar = plt.colorbar(sm)
-            for t in cbar.ax.get_yticklabels():
-                t.set_fontsize(10)
-            cbar.outline.set_visible(False)
-            cbar.ax.tick_params()
-            opinions = list(its['status'].values())
-            C = nclusters(opinions, 0.1)
-            at = AnchoredText(
-                f"C={C}", prop=dict(size=15), frameon=True, loc='lower left')
-            at.patch.set_boxstyle("round,pad=0.,rounding_size=0.2")
-            ax.add_artist(at)
-            plt.savefig(f"snapshotGraphs nuovi nuovi/{modelname}/{name}/network {it}.png")
-            plt.close()
-            fig, ax = plt.subplots(1, 1, num=1, figsize=(10, 6), dpi=600)
-            degrees = [G.degree(n) for n in G.nodes()]
-            sns.histplot(x=degrees, bins=30, binwidth=1, kde=True)
-            plt.title(f"Degree distribution at time {it}")
-            plt.xlabel("Degree")
-            plt.ylabel("# Nodes")
-            plt.tight_layout()
-            plt.savefig(f"snapshotGraphs nuovi nuovi/{modelname}/{name}/degreedist {it}.png")
-            plt.close()
-
-            nx.write_edgelist(G, f"snapshotGraphs nuovi nuovi/{modelname}/{name}/edgelist {it}.csv", delimiter=",")
-            with open(f"snapshotGraphs nuovi nuovi/{modelname}/{name}/opinions {it}.txt", "w") as opfile:
-                for op in list(np.array(list(its['status'].values()))):
-                    opfile.write(str(op)+"\n")
-            
-            if C <= 1.0:
-                break
+            if save_snapshot(model, its, modelname, name, it) == 1:
+                return system_status
+    return system_status
 
 modelname = "rewiring"
-
-if not os.path.exists(f"snapshotGraphs nuovi nuovi/{modelname}/"):
-    os.mkdir(f"snapshotGraphs nuovi nuovi/{modelname}/")
-
-n = 250
+n = 200
 max_it = 1000000
+initial_status = np.random.random_sample(n)
+graphname = 'er'
+p = 0.1
+i = 1
+graph = nx.erdos_renyi_graph(n, p, seed = i)
+while nx.number_connected_components(graph) > 1:
+    i+=1
+    graph = nx.erdos_renyi_graph(n, p, seed = i)
 
-for graphname in ['ba']:
-    if graphname == 'er':
-        p = 0.1
-        graph = nx.erdos_renyi_graph(n, p, seed=0)
-    else:
-        p = 5
-        graph = nx.barabasi_albert_graph(n, p, seed=0)
-    for pr in [0.0, 0.5]:
-        for e in [0.2]:
-            for g in [0.0,0.5,1.0,1.5]:
-                name = f"{modelname} {graphname}{p} pr{pr} e{e} g{g} mi{max_it}"
-                print(name)
-                if not os.path.exists(f"snapshotGraphs nuovi nuovi/{modelname}/{name}/"):
-                    if modelname == "rewiring":
-                        model = op.AdaptiveAlgorithmicBiasModel(graph)
-                    else:
-                        model = op.AdaptivePeerPressureAlgorithmicBiasModel(graph)
-                    config = mc.Configuration()
-                    config.add_model_parameter("epsilon", e)
-                    config.add_model_parameter("gamma", g)
-                    config.add_model_parameter("p", pr)
-                    model.set_initial_status(config)
-                    status = iteration_bunch(model, name, start=0, niterations=max_it+1, node_status=True, progress_bar=True) 
-                else:
-                    start = 0
-                    for filename in os.listdir(f"snapshotGraphs nuovi nuovi/{modelname}/{name}/"):
-                        if filename.startswith("edgelist"):
-                            print("yay")
-                            tmp = int(filename.split(' ')[1].split('.')[0])
-                            if tmp > start:
-                                start = tmp
-                                print(start)
-                    if start < max_it:
-                        print("starting from it ", start)
-                        gr = read_snapshot(f"snapshotGraphs nuovi nuovi/{modelname}/{name}/edgelist {start}.csv")
-                        opinions, colors = read_opinions(f"snapshotGraphs nuovi nuovi/{modelname}/{name}/opinions {start}.txt")
-                        if modelname == "rewiring":
-                            model = op.AdaptiveAlgorithmicBiasModel(gr)
-                        else:
-                            model = op.AdaptivePeerPressureAlgorithmicBiasModel(gr)
-                        config = mc.Configuration()
-                        config.add_model_parameter("epsilon", e)
-                        config.add_model_parameter("gamma", g)
-                        config.add_model_parameter("p", pr)
-                        model.set_initial_status(config, initial_status=opinions)
-                        status = iteration_bunch(model, name, start=start, niterations=max_it+1, node_status=True, progress_bar=True) 
-                    else:
-                        print("everything's already there!!")
+for pr in [0.0, 0.5]:
+    for e in [0.2]:
+        for g in [0.0, 0.5]:
+            name = f"{modelname} {graphname}{p} n{n} pr{pr} e{e} g{g} mi{max_it}"
+            print(name)
+            if modelname == "rewiring":
+                model = op.AdaptiveAlgorithmicBiasModel(graph)
+            else:
+                model = op.AdaptivePeerPressureAlgorithmicBiasModel(graph)
+            config = mc.Configuration()
+            config.add_model_parameter("epsilon", e)
+            config.add_model_parameter("gamma", g)
+            config.add_model_parameter("p", pr)
+            model.set_initial_status(config, opinions = initial_status)
+            status = steady_state_coevolving(model, name, max_iterations=max_it+1, node_status=True, progress_bar=True)                
+
+for pr in [0.0, 0.5]:
+    for e in [0.2]:
+        for g in [1.0, 1.5]:
+            name = f"{modelname} {graphname}{p} n{n} pr{pr} e{e} g{g} mi{max_it}"
+            print(name)
+            if modelname == "rewiring":
+                model = op.AdaptiveAlgorithmicBiasModel(graph)
+            else:
+                model = op.AdaptivePeerPressureAlgorithmicBiasModel(graph)
+            config = mc.Configuration()
+            config.add_model_parameter("epsilon", e)
+            config.add_model_parameter("gamma", g)
+            config.add_model_parameter("p", pr)
+            model.set_initial_status(config, opinions = initial_status)
+            status = steady_state_coevolving(model, name, max_iterations=max_it+1, node_status=True, progress_bar=True)   
