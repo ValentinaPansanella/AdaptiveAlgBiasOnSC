@@ -25,19 +25,19 @@ def multiple_exec():
                 final_iterations = dict()
                 name = f"triangles rewiring {graphname}{p} pr{pr} e{e} g{g} mi{max_it}"
                 #performing multiple runs with same parameters for statistically valid results
-                if os.path.exists(f"aggregate/final_opinions {name}.json"):
-                    print(f"dictionary already exists for {name}")
-                    with open(f"aggregate/final_opinions {name}.json") as fo:
-                        final_opinions = json.load(fo)
-                    with open(f"aggregate/final_iterations {name}.json") as fi:
-                        final_iterations = json.load(fi)
-                    dict_keys = [int(el) for el in final_opinions.keys()]
-                    max_key = max(dict_keys)+1
-                    print(max_key)
-                else:
-                    final_opinions = dict()
-                    final_iterations = dict()
-                    max_key = 0
+                # if os.path.exists(f"aggregate/final_opinions {name}.json"):
+                #     print(f"dictionary already exists for {name}")
+                #     with open(f"aggregate/final_opinions {name}.json") as fo:
+                #         final_opinions = json.load(fo)
+                #     with open(f"aggregate/final_iterations {name}.json") as fi:
+                #         final_iterations = json.load(fi)
+                #     dict_keys = [int(el) for el in final_opinions.keys()]
+                #     max_key = max(dict_keys)+1
+                #     print(max_key)
+                # else:
+                final_opinions = dict()
+                final_iterations = dict()
+                max_key = 0
 
                 for nr in (range(max_key, nruns)):
                     print(f"doing {name} run {nr}")

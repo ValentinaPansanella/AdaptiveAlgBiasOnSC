@@ -170,7 +170,7 @@ def save_last_snapshot(model, its, modelname, name, nit):
     fig, ax = plt.subplots(1, 1, num=1, figsize=(10, 6))
     sns.despine()
     degrees = [G.degree(n) for n in G.nodes()]
-    sns.histplot(x=degrees, kde=True)
+    sns.histplot(x=degrees, bins = 11, kde=True)
     ax.grid(True)
     ax.tick_params(direction='out', length=10, width=3, colors = "black", labelsize=30, grid_color = "black", grid_alpha = 0.1)
     ax.set_ylabel("# Nodes", size=20)
