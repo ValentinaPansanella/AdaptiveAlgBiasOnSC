@@ -244,7 +244,7 @@ while ncc > 1:
 
 for pr in [0.0, 0.5]:
     for e in [0.2]:
-        for g in [0.0, 0.5]:
+        for g in [1.0, 1.5]:
             
             name = f"{modelname} {graphname}{p} n{n} pr{pr} e{e} g{g} mi{max_it}"
             graph = nx.erdos_renyi_graph(n, p, seed = i)
