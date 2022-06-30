@@ -42,6 +42,7 @@ def nclusters(data, threshold):
         C_den += cluster[k]*cluster[k]
     C = C_num / C_den
     return C
+
 def read_snapshot(filename):
     G = nx.Graph()
     with open(filename, 'r') as edgelistfile:
@@ -68,6 +69,65 @@ def add_opinions(graph, opinions):
 
 def compute_ncc(graph):
     return nx.number_connected_components(graph)
+
+def read_snapshot(filename, it):
+    G = nx.Graph()
+    with open(filename, 'r') as runfile:
+        its = json.load(runfile)
+        edgelist = its[it]['edges']
+        opinions = its[it]['status']
+        for edge in edgelist:
+            G.add_node(int(edge[0])) #superhero in first column
+            G.add_node(int(edge[1])) #superhero in second column
+            G.add_edge(int(edge[0]), int(edge[1]), weight = 1)
+        nx.set_node_attributes(G, {int(k): v for k,v in opinions.items()}, name="opinion")
+        return G
+
+def compute_ncc(graph):
+    return nx.number_connected_components(graph)
+
+def compute_avgdeg(graph):
+    degree = dict(graph.degree())
+    s = sum(degree.values())
+    return s/graph.number_of_nodes()
+    
+def compute_triangles(graph):
+    d = dict(nx.triangles(graph))
+    s = sum(d.values())
+    return s/graph.number_of_nodes()
+
+def compute_clustering(graph):
+    return nx.average_clustering(graph)
+
+def compute_nac(graph):
+    return nx.degree_assortativity_coefficient(graph)
+
+def compute_assortativity(graph):
+    
+    def homophily(graph, v):
+        opv = graph.nodes[v]['opinion']
+        degv = graph.degree[v]
+        neighborsops = [graph.nodes[u]['opinion'] for u in graph.neighbors(v)]
+        neighborsdeg = [graph.degree[u] for u in graph.neighbors(v)]
+        E = graph.number_of_edges()
+        num = 0
+        den = 0
+        for i in range(len(neighborsops)):
+            num += (1 - ((degv)*neighborsdeg[i])/(2*E))*(opv*neighborsops[i])
+            if abs(opv-neighborsops[i]) < 0.001:
+                delta = 1
+            else:
+                delta = 0
+            den += ((degv*delta)-((degv)*neighborsdeg[i])/(2*E))*(opv*neighborsops[i])              
+        return num/den
+
+    hlist = []
+    
+    for v in list(G.nodes()):
+        hv = homophily(graph, v)
+        hlist.append(hv)
+    
+    return sum(hlist)/len(hlist)
 
 
 warnings.filterwarnings("ignore")
@@ -126,45 +186,9 @@ def steady_state_coevolving(model, name, nsteady=1000, max_iterations=10, sensib
     return system_status
 
 modelname = "rewiring"
-n = 200
-max_it = 1000000
-initial_status = np.random.random_sample(n)
-graphname = 'er'
-p = 0.1
-i = 1
-graph = nx.erdos_renyi_graph(n, p, seed = i)
-while nx.number_connected_components(graph) > 1:
-    i+=1
-    graph = nx.erdos_renyi_graph(n, p, seed = i)
+G = read_snapshot(f"snapshotGraphs/rewiring/rewiring er0.1 n250 pr0.0 e0.2 g0.0 mi1000000/rewiring er0.1 n250 pr0.0 e0.2 g0.0 mi1000000_edgelist initial.csv")                   
+opinions = read_opinions(f"snapshotGraphs/rewiring/rewiring er0.1 n250 pr0.0 e0.2 g0.0 mi1000000/rewiring er0.1 n250 pr0.0 e0.2 g0.0 mi1000000_opinions initial.txt")
+add_opinions(G, opinions)
 
-for pr in [0.0, 0.5]:
-    for e in [0.2]:
-        for g in [0.0, 0.5]:
-            name = f"{modelname} {graphname}{p} n{n} pr{pr} e{e} g{g} mi{max_it}"
-            print(name)
-            if modelname == "rewiring":
-                model = op.AdaptiveAlgorithmicBiasModel(graph)
-            else:
-                model = op.AdaptivePeerPressureAlgorithmicBiasModel(graph)
-            config = mc.Configuration()
-            config.add_model_parameter("epsilon", e)
-            config.add_model_parameter("gamma", g)
-            config.add_model_parameter("p", pr)
-            model.set_initial_status(config, opinions = initial_status)
-            status = steady_state_coevolving(model, name, max_iterations=max_it+1, node_status=True, progress_bar=True)                
 
-for pr in [0.0, 0.5]:
-    for e in [0.2]:
-        for g in [1.0, 1.5]:
-            name = f"{modelname} {graphname}{p} n{n} pr{pr} e{e} g{g} mi{max_it}"
-            print(name)
-            if modelname == "rewiring":
-                model = op.AdaptiveAlgorithmicBiasModel(graph)
-            else:
-                model = op.AdaptivePeerPressureAlgorithmicBiasModel(graph)
-            config = mc.Configuration()
-            config.add_model_parameter("epsilon", e)
-            config.add_model_parameter("gamma", g)
-            config.add_model_parameter("p", pr)
-            model.set_initial_status(config, opinions = initial_status)
-            status = steady_state_coevolving(model, name, max_iterations=max_it+1, node_status=True, progress_bar=True)   
+ 
