@@ -14,13 +14,13 @@ warnings.filterwarnings("ignore")
 def multiple_exec():
     graphname = "er"
     p = 0.1
-    n = 250
+    n = 100
     graph = nx.erdos_renyi_graph(n, p)
     nruns = 30
     max_it = 100000
-    for pr in [0.5]:
-        for e in [0.4]:
-            for g in [1.6, 1.2, 0.8, 0.4, 0.0]:
+    for pr in [1.0, 0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1, 0.0]:
+        for e in [0.35]:
+            for g in [1.5, 1.0, 0.5, 0.0]:
                 final_opinions = dict()
                 final_iterations = dict()
                 name = f"rewiring {graphname}{p} pr{pr} e{e} g{g} mi{max_it}"
@@ -50,7 +50,11 @@ def multiple_exec():
                     config.add_model_parameter("p", pr)
                     model.set_initial_status(config)
                     # # Simulation execution
-                    steady_status = model.steady_state(max_iterations=max_it, nsteady=1000, sensibility=0.00001, node_status=True, progress_bar=True)
+                    steady_status = model.steady_state_coevolving(max_iterations=max_it, nsteady=1000, sensibility=0.00001, node_status=True, progress_bar=True)
+                    
+                    with open(f"res/new/{name} nr{nr}.json", "w") as jsonfile:
+                        json.dump(steady_status, jsonfile)
+
                     last_opinions = [v for k, v in steady_status[len(steady_status)-1]['status'].items()]
                     n_its = int(steady_status[len(steady_status)-1]['iteration'])
                         
