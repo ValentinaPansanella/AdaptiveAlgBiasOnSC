@@ -13,10 +13,9 @@ warnings.filterwarnings("ignore")
 
 def multiple_exec():
     graphname = "er"
-    p = 0.1
     n = 100
-    graph = nx.erdos_renyi_graph(n, p)
-    nruns = 30
+    graph = nx.complete_graph(n)
+    nruns = 15
     max_it = 1000000
     
     i = 0
@@ -27,7 +26,7 @@ def multiple_exec():
                 for g in [1.5, 1.25, 1.0, 0.75, 0.5, 0.0]:
                     final_opinions = dict()
                     final_iterations = dict()
-                    name = f"media {titles[i]} {graphname}{p} pm{pm} e{e} g{g} mi{max_it}"
+                    name = f"media {titles[i]} complete pm{pm} e{e} g{g} mi{max_it}"
                     #performing multiple runs with same parameters for statistically valid results
                     if os.path.exists(f"aggregate/final_opinions {name}.json"):
                         print(f"dictionary already exists for {name}")
@@ -75,6 +74,7 @@ def multiple_exec():
 
                 with open(f"aggregate/final_opinions {name}.json") as fo:
                         final_opinions = json.load(fo)
+                        
                 with open(f"aggregate/final_iterations {name}.json") as fi:
                     final_iterations = json.load(fi)
                     
