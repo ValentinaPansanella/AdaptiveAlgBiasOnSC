@@ -19,12 +19,12 @@ def multiple_exec():
     max_it = 1000000
     
     i = 0
-    for mo in [[0.05, 0.95]]:
+    for mo in [[0.0]]:
         # titles = ['extremist', 'moderate', 'polarised', 'balanced']
-        titles = ['polarised']
+        titles = ['extremist']
         for pm in [0.0, 0.5, 1.0]:
-            for e in [0.32]:
-                for g in [0.0]:
+            for e in [0.3, 0.4]:
+                for g in [0.0, 1.5]:
                     # final_opinions = dict()
                     # final_iterations = dict()
                     name = f"media {titles[i]} complete pm{pm} e{e} g{g} mi{max_it}"
